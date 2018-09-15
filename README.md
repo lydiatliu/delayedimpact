@@ -15,3 +15,5 @@ Part of our implementation is adapted from:
 
 Moritz Hardt, Eric Price, and Nati Srebro. [Equality of opportunity in supervised learning.](https://arxiv.org/abs/1610.02413) In Proc. 30th NIPS, 2016.
 
+## License
+This repository is licensed under the BSD 3-Clause "New" or "Revised" [License](https://github.com/lydiatliu/delayedimpact/blob/master/LICENSE).
