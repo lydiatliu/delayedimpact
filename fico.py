@@ -25,10 +25,12 @@ def cleanup_frame(frame):
 
 def read_totals(data_dir=DATA_DIR):
     """Read the total number of people of each race"""
+    # NOTE: the pandas from_csv is no longer functional, so I updated the command to read_csv
     #frame = cleanup_frame(pd.DataFrame.from_csv(data_dir + FILES['overview']))
     frame = cleanup_frame(pd.read_csv(data_dir + FILES['overview']))
-    return {r: frame[r][0] for r in frame.columns}
+    # NOTE: the below with 'SSA' did not work, so I used 0 instead to return the totals
     #return {r: frame[r]['SSA'] for r in frame.columns}
+    return {r: frame[r][0] for r in frame.columns}
 
 def convert_percentiles(idx):
     """Convert percentiles"""
@@ -46,17 +48,7 @@ def convert_percentiles(idx):
            (850, 0),
            ]
 
-    # TODO 2: create a list containing the values 0 to 100 with 0.5 steps in between
-    # create a global variable which is the count
-    # update the count after every if before the return
-    # the x value can be a float!!
     def convert_one(x):
-        print('IN CONVERT ONE FUNC IN CONVERT PERCENTILES')
-        print('this is the x score we are looking at:')
-        print(x)
-        print(type(x))
-        print('after x type conversion:')
-        print(type(x))
         partial = 0
         for ((v, s), (v2, _)) in zip(pdf, pdf[1:]):
             print(type(v))
@@ -73,45 +65,25 @@ def parse_data(data_dir=DATA_DIR, filenames=None):
     """Parse sqf data set."""
     if filenames is None:
         filenames = [FILES['cdf_by_race'], FILES['performance_by_race']]
-
-    #cdfs = cleanup_frame(pd.DataFrame.from_csv(data_dir + filenames[0]))
-    #performance = 100 - cleanup_frame(pd.DataFrame.from_csv(data_dir + filenames[1]))
-
-    #updated version of original below...but now issues with scores and -100 so need to fix:
-    #performance = 100 - cleanup_frame(pd.read_csv(data_dir + filenames[1]))
-
     cdfs = cleanup_frame(pd.read_csv(data_dir + filenames[0]))
     performance = 100 - cleanup_frame(pd.read_csv(data_dir + filenames[1]))
     return (cdfs / 100., performance / 100.)
 
 def get_FICO_data(data_dir=DATA_DIR, do_convert_percentiles=True):
-    # NOTE: WHEN do_convert_percentiles is FALSE there are no NaN values and jupyter notebook runs!!
     """Get FICO data in desired format"""
     data_pair = parse_data(data_dir)
     totals = read_totals(data_dir)
-    # FOR TROUBLESHOOTING
-    #print('IN get_fico_data func')
-    #print('data_pair values after running parse_data func')
-    #print(data_pair)  # it's the same as what parse data output is in parse_data function
-
-    #first_tuple = data_pair[1]
-    #print(first_tuple.Score)
-    #exit(0)
+    # NOTE: the below line is necessary for convert percentiles to work correctly
+    scores = pd.read_csv(data_dir + FILES['performance_by_race'], usecols=['Score'])
 
     if do_convert_percentiles:
-        for v in data_pair:  # data_pair has a len of 2 bc it contains two tuples
-            # TODO 1: might need to change the v.index
-            # try creating a rangeIndex and specify the dtype as a float
-            print('original v.index from data_pair in for loop')
-            print(v.index)
-            print(type(v.index))
-            v.index = convert_percentiles(v.index)
-            print('updated v.index:')
-            print(v.index)
+        for v in data_pair:
+            # NOTE: using v.index as the parameter wasn't working because the indexes went
+            #   from 0-197 (step 1) instead of 0-100 (step 0.5) so ended up with incorrect scores and
+            #   NAN indexes after convert_percentiles
+            # to fix this: I inputted the scores from the csv
+            #v.index = convert_percentiles(v.index)  # the original line which I updated in the line below
+            v.index = convert_percentiles(scores['Score'])
     cdfs = data_pair[0]
-
-    # FOR TROUBLESHOOTING
-    print('cdfs after do convert percentiles')
-    print(cdfs)
     performance = data_pair[1]
     return cdfs, performance, totals
