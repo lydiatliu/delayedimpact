@@ -51,11 +51,7 @@ def convert_percentiles(idx):
     def convert_one(x):
         partial = 0
         for ((v, s), (v2, _)) in zip(pdf, pdf[1:]):
-            print(type(v))
-            print(type(s))
             if partial + s >= x:
-                print('entered into the if so will return:')
-                print(v + (v2 - v) * (x - partial) / s)
                 return v + (v2 - v) * (x - partial) / s
             partial += s
 
