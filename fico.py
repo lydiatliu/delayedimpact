@@ -25,10 +25,10 @@ def cleanup_frame(frame):
 
 def read_totals(data_dir=DATA_DIR):
     """Read the total number of people of each race"""
-    # NOTE: the pandas from_csv is no longer functional, so I updated the command to read_csv
+    # NOTE: the pandas from_csv is no longer functional, so update the command to read_csv
     #frame = cleanup_frame(pd.DataFrame.from_csv(data_dir + FILES['overview']))
     frame = cleanup_frame(pd.read_csv(data_dir + FILES['overview']))
-    # NOTE: the below with 'SSA' did not work, so I used 0 instead to return the totals
+    # NOTE: the below with 'SSA' did not work, so use 0 instead to return the totals
     #return {r: frame[r]['SSA'] for r in frame.columns}
     return {r: frame[r][0] for r in frame.columns}
 
@@ -61,6 +61,7 @@ def parse_data(data_dir=DATA_DIR, filenames=None):
     """Parse sqf data set."""
     if filenames is None:
         filenames = [FILES['cdf_by_race'], FILES['performance_by_race']]
+    # NOTE: the pandas from_csv is no longer functional, so update the two lines below to read_csv
     cdfs = cleanup_frame(pd.read_csv(data_dir + filenames[0]))
     performance = 100 - cleanup_frame(pd.read_csv(data_dir + filenames[1]))
     return (cdfs / 100., performance / 100.)
@@ -77,8 +78,8 @@ def get_FICO_data(data_dir=DATA_DIR, do_convert_percentiles=True):
             # NOTE: using v.index as the parameter wasn't working because the indexes went
             #   from 0-197 (step 1) instead of 0-100 (step 0.5) so ended up with incorrect scores and
             #   NAN indexes after convert_percentiles
-            # to fix this: I inputted the scores from the csv
-            #v.index = convert_percentiles(v.index)  # the original line which I updated in the line below
+            # to fix this: input the scores from the csv
+            #v.index = convert_percentiles(v.index)      # the original line
             v.index = convert_percentiles(scores['Score'])
     cdfs = data_pair[0]
     performance = data_pair[1]
