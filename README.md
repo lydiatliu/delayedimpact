@@ -18,8 +18,16 @@ This repository is **under construction! :D**
 - Couldn't use K-nearest neighbors as an ML classifier bc the fit function does not take in sample weights parameter
 - For Fairlearn mitigator algorithms to work, I have to weigh the data
 - ^At the moment, I'm weighing all samples equally (weight_index=1) 
+- The sklearn confusion matrix looks like:
+  ```
+  [[TN FP]
+   [FN TP]]
+  ```
+- Inspired by Liu et. al.'s 2018 paper, TPs' scores increase by 75, FPs' scores drop by 150, and TNs and FNs do not change currently. Also, Delayed Impact (DI) is the average score change of each (racial) group.
+- About race features: Black is 0 and White it 1.
 
 ## Questions:
+- Is the DI calculated with the whole racial group in mind or the subgroup of the racial group who was given a loan (positive classes only)?
 - Do I need to scale the data?? This standardizes features by removing mean and scaling to unit variance. 
 ``` 
     scaler = StandardScaler()
