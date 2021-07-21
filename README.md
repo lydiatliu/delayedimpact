@@ -6,11 +6,10 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Check what I should put first for predict function model or the instantiated classifier itself? Or should I just take out the model = part all together??
+- Clean up notebook import statements
 - Add the delayed impact results to the evaluation of results
 - Calculate sample weights and get results, [tips](http://www.surveystar.com/startips/weighting.pdf), [sample weight design effects](https://www.nlsinfo.org/content/cohorts/nlsy97/using-and-understanding-the-data/sample-weights-design-effects/page/0/0/#intro)
 - Try to figure out bounded group loss metric, need a loss parameter. Definition: 'asks that the prediction error restricted to any protected group remain below some pre-determined level' from https://arxiv.org/abs/1905.12843
-- See if I can get two conf matrices to be printed (black and white groups) in one cell's output
 
 ## Notes:
 - Fairness constraint options: DP refers to demographic parity, EO to equalized odds, TPRP to true positive rate parity, FPRP to false positive rate parity, ERP to error rate parity, and BGL to bounded group loss.
