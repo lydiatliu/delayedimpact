@@ -157,7 +157,7 @@ def print_fairness_metrics(y_true, y_pred, sensitive_features):
     print('-->difference of 0 means that all groups have the same TN, TN, FP, and FN rates')
     eod_ratio = equalized_odds_ratio(y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
     print('EOD Ratio:', eod_ratio)
-    print('-->ratio of 1 means that all groups have the same TN, TN, FP, and FN rates rates')
+    print('-->ratio of 1 means that all groups have the same TN, TN, FP, and FN rates rates \n')
     return
 
 def calculate_delayed_impact(X_test, y_true, y_pred, race_test):

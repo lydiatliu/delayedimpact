@@ -25,6 +25,7 @@ This repository is **under construction! :D**
   ```
 - Inspired by Liu et. al.'s 2018 paper, TPs' scores increase by 75, FPs' scores drop by 150, and TNs and FNs do not change currently. Also, Delayed Impact (DI) is the average score change of each (racial) group.
 - About race features: Black is 0 and White it 1.
+- The SVM + Reduction algs are super slow...maybe a complexity issue? Could see if another kernel changes that?
 
 ## Questions:
 - Is the DI calculated with the whole racial group in mind or the subgroup of the racial group who was given a loan (positive classes only)?
