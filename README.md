@@ -25,7 +25,6 @@ This repository is **under construction! :D**
   ```
 - Inspired by Liu et. al.'s 2018 paper, TPs' scores increase by 75, FPs' scores drop by 150, and TNs and FNs do not change currently. Also, Delayed Impact (DI) is the average score change of each (racial) group.
 - About race features: Black is 0 and White it 1.
-- The SVM + Reduction algs are super slow...maybe a complexity issue? Could see if another kernel changes that?
 - About the reduction algorithms and fairness constraints: 'disparity constraints are cast as Lagrange multipliers, which cause the
 reweighting and relabelling of the input data. This *reduces* the problem back to standard machine
 learning training.'
