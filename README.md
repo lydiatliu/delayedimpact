@@ -6,9 +6,10 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Clean up notebook import statements
-- Add the delayed impact results to the evaluation of results
 - Calculate sample weights and get results, [tips](http://www.surveystar.com/startips/weighting.pdf), [sample weight design effects](https://www.nlsinfo.org/content/cohorts/nlsy97/using-and-understanding-the-data/sample-weights-design-effects/page/0/0/#intro)
+- Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
+- Investigate the back end code for fairness constraints 
+- Clean up notebook import statements
 - Try to figure out bounded group loss metric, need a loss parameter. Definition: 'asks that the prediction error restricted to any protected group remain below some pre-determined level' from https://arxiv.org/abs/1905.12843
 
 ## Notes:
@@ -25,6 +26,10 @@ This repository is **under construction! :D**
 - Inspired by Liu et. al.'s 2018 paper, TPs' scores increase by 75, FPs' scores drop by 150, and TNs and FNs do not change currently. Also, Delayed Impact (DI) is the average score change of each (racial) group.
 - About race features: Black is 0 and White it 1.
 - The SVM + Reduction algs are super slow...maybe a complexity issue? Could see if another kernel changes that?
+- About the reduction algorithms and fairness constraints: 'disparity constraints are cast as Lagrange multipliers, which cause the
+reweighting and relabelling of the input data. This *reduces* the problem back to standard machine
+learning training.'
+- Files to read/understand/change for reduction alg+fairness constraints understandings+additions: fairlearn/fairlearn/reductions/_moments/utility_parity.py, moment.py, __init__.py, ../__init__.py,    
 
 ## Questions:
 - Is the DI calculated with the whole racial group in mind or the subgroup of the racial group who was given a loan (positive classes only)?

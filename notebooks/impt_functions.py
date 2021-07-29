@@ -2,7 +2,7 @@
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix
 import pandas as pd
 import numpy as np
 from fairlearn.reductions import ExponentiatedGradient, GridSearch, DemographicParity, EqualizedOdds, \
@@ -24,6 +24,9 @@ def prep_data(data, test_size, weight_index):
     x = data[['score', 'race']].values
     y = data['repay_indices'].values
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=42)
+
+    print('Here are the x values: ', x, '\n')
+    print('Here are the y values: ', y)
 
     # collect our sensitive attribute
     race_train = X_train[:, 1]
