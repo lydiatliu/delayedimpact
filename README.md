@@ -10,6 +10,8 @@ This repository is **under construction! :D**
 - ^^Don't think I need to do that after all...since the demographic data follows the census race data
 - Try AUC and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
+- Compare classifiers like in this nb: https://github.com/fairlearn/fairlearn/blob/main/notebooks/Mitigating%20Disparities%20in%20Ranking%20from%20Binary%20Data.ipynb for EG
+and https://github.com/fairlearn/fairlearn/blob/main/notebooks/Binary%20Classification%20with%20the%20UCI%20Credit-card%20Default%20Dataset.ipynb for GS
 - Add more fairness constraints to the backend
 - Clean up notebook import statements
 - Try to figure out bounded group loss metric, need a loss parameter. Definition: 'asks that the prediction error restricted to any protected group remain below some pre-determined level' from https://arxiv.org/abs/1905.12843
