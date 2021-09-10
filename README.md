@@ -7,8 +7,10 @@ This repository is **under construction! :D**
 
 ## Todos:
 - Calculate sample weights and get results, [tips](http://www.surveystar.com/startips/weighting.pdf), [sample weight design effects](https://www.nlsinfo.org/content/cohorts/nlsy97/using-and-understanding-the-data/sample-weights-design-effects/page/0/0/#intro)
+- ^^Don't think I need to do that after all...since the demographic data follows the census race data
+- Try AUC and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
-- Investigate the back end code for fairness constraints 
+- Add more fairness constraints to the backend
 - Clean up notebook import statements
 - Try to figure out bounded group loss metric, need a loss parameter. Definition: 'asks that the prediction error restricted to any protected group remain below some pre-determined level' from https://arxiv.org/abs/1905.12843
 
