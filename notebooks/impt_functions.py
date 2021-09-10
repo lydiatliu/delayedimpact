@@ -9,6 +9,8 @@ from fairlearn.reductions import ExponentiatedGradient, GridSearch, DemographicP
     TruePositiveRateParity, FalsePositiveRateParity, ErrorRateParity, BoundedGroupLoss
 from fairlearn.metrics import *
 from raiwidgets import FairnessDashboard
+import matplotlib.pyplot as plt
+
 
 
 def get_data(file):
@@ -88,6 +90,55 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     print(classification_report(y_test_white, y_pred_white))
     evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
     return
+
+
+def grid_search_show(model, constraint, y_predict, X_test, y_test, race_test, constraint_name, model_name, models_dict, decimal):
+    sweep_preds = [predictor.predict(X_test) for predictor in model.predictors_]
+    sweep_scores = [predictor.predict_proba(X_test)[:, 1] for predictor in model.predictors_]
+
+    sweep = [constraint(y_test, preds, sensitive_features=race_test)
+             for preds in sweep_preds]
+    balanced_accuracy_sweep = [balanced_accuracy_score(y_test, preds) for preds in sweep_preds]
+    # auc_sweep = [roc_auc_score(y_test, scores) for scores in sweep_scores]
+
+    # Select only non-dominated models (with respect to balanced accuracy and equalized odds difference)
+    all_results = pd.DataFrame(
+        {"predictor": model.predictors_, "accuracy": balanced_accuracy_sweep, "disparity": sweep}
+    )
+    non_dominated = []
+    for row in all_results.itertuples():
+        accuracy_for_lower_or_eq_disparity = all_results["accuracy"][all_results["disparity"] <= row.disparity]
+        if row.accuracy >= accuracy_for_lower_or_eq_disparity.max():
+            non_dominated.append(True)
+        else:
+            non_dominated.append(False)
+
+    sweep_non_dominated = np.asarray(sweep)[non_dominated]
+    balanced_accuracy_non_dominated = np.asarray(balanced_accuracy_sweep)[non_dominated]
+    # auc_non_dominated = np.asarray(auc_sweep)[non_dominated]
+
+    # Plot DP difference vs balanced accuracy
+    plt.scatter(balanced_accuracy_non_dominated, sweep_non_dominated, label=model_name)
+    plt.scatter(balanced_accuracy_score(y_test, y_predict),
+                constraint(y_test, y_predict, sensitive_features=race_test),
+                label="Unmitigated Model")
+    plt.xlabel("Balanced Accuracy")
+    plt.ylabel(constraint_name)
+    plt.legend(bbox_to_anchor=(1.55, 1))
+    plt.show()
+
+    models_dict = update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test)
+
+    return models_dict
+
+def update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test):
+    # Compare GridSearch models with low values of equalized odds difference with the previously constructed models
+    grid_search_dict = {"GS_DP".format(i): (sweep_preds[i], sweep_scores[i])
+                        for i in range(len(sweep_preds))
+                        if non_dominated[i] and sweep[i] < decimal}
+    models_dict.update(grid_search_dict)
+    print(get_metrics_df(models_dict, y_test, race_test))
+    return models_dict
 
 def get_metrics_df(models_dict, y_true, group):
     metrics_dict = {
