@@ -2,7 +2,7 @@
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score, roc_auc_score
 import pandas as pd
 import numpy as np
 from fairlearn.reductions import ExponentiatedGradient, GridSearch, DemographicParity, EqualizedOdds, \
@@ -89,6 +89,37 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
     return
 
+def get_metrics_df(models_dict, y_true, group):
+    metrics_dict = {
+        "Overall selection rate": (
+            lambda x: selection_rate(y_true, x), True),
+        "Demographic parity difference": (
+            lambda x: demographic_parity_difference(y_true, x, sensitive_features=group), True),
+        "Demographic parity ratio": (
+            lambda x: demographic_parity_ratio(y_true, x, sensitive_features=group), True),
+        "------": (lambda x: "", True),
+        "Overall balanced error rate": (
+            lambda x: 1-balanced_accuracy_score(y_true, x), True),
+        "Balanced error rate difference": (
+            lambda x: MetricFrame(metrics=balanced_accuracy_score, y_true=y_true, y_pred=x, sensitive_features=group).difference(method='between_groups'), True),
+        " ------": (lambda x: "", True),
+        "False positive rate difference": (
+            lambda x: false_positive_rate_difference(y_true, x, sensitive_features=group), True),
+        "False negative rate difference": (
+            lambda x: false_negative_rate_difference(y_true, x, sensitive_features=group), True),
+        "Equalized odds difference": (
+            lambda x: equalized_odds_difference(y_true, x, sensitive_features=group), True),
+        "  ------": (lambda x: "", True),
+        "Overall AUC": (
+            lambda x: roc_auc_score(y_true, x), False),
+        "AUC difference": (
+            lambda x: MetricFrame(metrics=roc_auc_score, y_true=y_true, y_pred=x, sensitive_features=group).difference(method='between_groups'), False),
+    }
+    df_dict = {}
+    for metric_name, (metric_func, use_preds) in metrics_dict.items():
+        df_dict[metric_name] = [metric_func(preds) if use_preds else metric_func(scores)
+                                for model_name, (preds, scores) in models_dict.items()]
+    return pd.DataFrame.from_dict(df_dict, orient="index", columns=models_dict.keys())
 
 # Reference: https://fairlearn.org/v0.5.0/api_reference/fairlearn.metrics.html
 def add_contraint(model, constraint_str, reduction_alg, X_train, y_train, race_train, race_test, X_test, y_test, y_predict, sample_weight_test, dashboard_bool):
@@ -139,7 +170,7 @@ def add_contraint(model, constraint_str, reduction_alg, X_train, y_train, race_t
         FairnessDashboard(sensitive_features=race_test,y_true=y_test,
                           y_pred={"initial model": y_predict, "mitigated model": y_pred_mitigated})
     calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
-    return
+    return mitigator
 
 
 def print_fairness_metrics(y_true, y_pred, sensitive_features):
