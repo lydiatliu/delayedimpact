@@ -127,13 +127,14 @@ def grid_search_show(model, constraint, y_predict, X_test, y_test, race_test, co
     plt.legend(bbox_to_anchor=(1.55, 1))
     plt.show()
 
-    models_dict = update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test)
+    models_dict = update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test, model_name)
 
-    return models_dict
+    return
 
-def update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test):
-    # Compare GridSearch models with low values of equalized odds difference with the previously constructed models
-    grid_search_dict = {"GS_DP".format(i): (sweep_preds[i], sweep_scores[i])
+def update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test, model_name):
+    # Compare GridSearch models with low values of fairness-diff with the previously constructed models
+    print(model_name)
+    grid_search_dict = {model_name.format(i): (sweep_preds[i], sweep_scores[i]) #{"GS_DP".format(i): (sweep_preds[i], sweep_scores[i])
                         for i in range(len(sweep_preds))
                         if non_dominated[i] and sweep[i] < decimal}
     models_dict.update(grid_search_dict)

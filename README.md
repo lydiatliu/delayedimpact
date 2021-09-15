@@ -6,22 +6,14 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Figure out what was the best/chosen gs predictor from the graph
-- Read the parameters and defaults and record them for EG and GS
-- Ask Natalia if I should have the randomint gen go from 0-99 or 1-100?, I think the former...
-- For results, use constraint diff instead of conf matrices for ease of understanding. maybe make an excel sheet?
-- Check it is accuracy the code is tryna get at and if its possible to change that??
-- Make gs visualization for other gs constraint results, maybe make a function for this?
-- Use getmetrics dict throughout for keeping track of fairness results (delete my print fairness metrics thing in dt notebook)
-- Update other notebooks with these changes
-- Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
-- Calculate sample weights and get results, [tips](http://www.surveystar.com/startips/weighting.pdf), [sample weight design effects](https://www.nlsinfo.org/content/cohorts/nlsy97/using-and-understanding-the-data/sample-weights-design-effects/page/0/0/#intro)
+- Make gs visualization for other gs constraint results
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
+- Figure out what was the best/chosen gs predictor from the graph
+- Use getmetrics dict throughout for keeping track of fairness results (delete my print fairness metrics thing in dt notebook/change the metrics we get)
+- Update other notebooks with the above ^^ changes
+- Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
-- Compare classifiers like in this nb: https://github.com/fairlearn/fairlearn/blob/main/notebooks/Mitigating%20Disparities%20in%20Ranking%20from%20Binary%20Data.ipynb for EG
 - Add more fairness constraints to the backend
-- Clean up notebook import statements
-- Try to figure out bounded group loss metric, need a loss parameter. Definition: 'asks that the prediction error restricted to any protected group remain below some pre-determined level' from https://arxiv.org/abs/1905.12843
 
 ## Notes:
 - Grid search code: https://github.com/fairlearn/fairlearn/blob/main/fairlearn/reductions/_grid_search/grid_search.py
@@ -42,6 +34,7 @@ This repository is **under construction! :D**
 reweighting and relabelling of the input data. This *reduces* the problem back to standard machine
 learning training.'
 - Files to read/understand/change for reduction alg+fairness constraints understandings+additions: fairlearn/fairlearn/reductions/_moments/utility_parity.py, moment.py, __init__.py, ../__init__.py,    
+- Bounded group loss metric not working, need a loss parameter. Definition: 'asks that the prediction error restricted to any protected group remain below some pre-determined level' from https://arxiv.org/abs/1905.12843
 
 ## Questions:
 - Is the DI calculated with the whole racial group in mind or the subgroup of the racial group who was given a loan (positive classes only)?
