@@ -2,7 +2,7 @@
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score, roc_auc_score
+from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score, roc_auc_score, f1_score
 import pandas as pd
 import numpy as np
 from fairlearn.reductions import ExponentiatedGradient, GridSearch, DemographicParity, EqualizedOdds, \
@@ -48,16 +48,25 @@ def prep_data(data, test_size, weight_index):
 
 
 def evaluation_outcome_rates(y_true, y_pred, sample_weight):
-    fner = false_negative_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
-    print('FNER=FN/(FN+TP)= ', fner)
-    fper = false_positive_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
-    print('FPER=FP/(FP+TN)= ', fper)
     tnr = true_negative_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
     print('TNR=TN/(TN+FP)= ', tnr)
     tpr = true_positive_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
     print('TPR=TP/(FP+FN)= ', tpr)
+    fner = false_negative_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
+    print('FNER=FN/(FN+TP)= ', fner)
+    fper = false_positive_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
+    print('FPER=FP/(FP+TN)= ', fper)
+
     return
 
+def get_f1_scores(y_test, y_predict):
+    print('F1 score micro: ')
+    print(f1_score(y_test, y_predict, average='micro'))
+    print('F1 score weighted: ')
+    print(f1_score(y_test, y_predict, average='weighted'))
+    print('F1 score binary: ')
+    print(f1_score(y_test, y_predict, average='binary'))
+    return
 
 def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     y_test_black, y_pred_black, sw_black, y_test_white, y_pred_white, sw_white = [], [], [], [], [], []
@@ -82,6 +91,7 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     print(cm_black)
     print(classification_report(y_test_black, y_pred_black))
     evaluation_outcome_rates(y_test_black, y_pred_black, sw_black)
+    get_f1_scores(y_test_black, y_pred_black)
 
     print('\nEVALUATION FOR WHITE GROUP')
     cm_white = confusion_matrix(y_test_white, y_pred_white)
@@ -89,6 +99,7 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     print(cm_white)
     print(classification_report(y_test_white, y_pred_white))
     evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
+    get_f1_scores(y_test_white, y_pred_white)
     return
 
 
@@ -133,7 +144,7 @@ def grid_search_show(model, constraint, y_predict, X_test, y_test, race_test, co
 
 def update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_dominated, decimal, y_test, race_test, model_name):
     # Compare GridSearch models with low values of fairness-diff with the previously constructed models
-    print(model_name)
+    #print(model_name)
     grid_search_dict = {model_name.format(i): (sweep_preds[i], sweep_scores[i]) #{"GS_DP".format(i): (sweep_preds[i], sweep_scores[i])
                         for i in range(len(sweep_preds))
                         if non_dominated[i] and sweep[i] < decimal}
@@ -155,6 +166,10 @@ def get_metrics_df(models_dict, y_true, group):
         "Balanced error rate difference": (
             lambda x: MetricFrame(metrics=balanced_accuracy_score, y_true=y_true, y_pred=x, sensitive_features=group).difference(method='between_groups'), True),
         " ------": (lambda x: "", True),
+        "True positive rate difference": (
+            lambda x: true_positive_rate_difference(y_true, x, sensitive_features=group), True),
+        "True negative rate difference": (
+            lambda x: true_negative_rate_difference(y_true, x, sensitive_features=group), True),
         "False positive rate difference": (
             lambda x: false_positive_rate_difference(y_true, x, sensitive_features=group), True),
         "False negative rate difference": (

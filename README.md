@@ -6,16 +6,16 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Make gs visualization for other gs constraint results
-- Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
-- Figure out what was the best/chosen gs predictor from the graph
-- Use getmetrics dict throughout for keeping track of fairness results (delete my print fairness metrics thing in dt notebook/change the metrics we get)
 - Update other notebooks with the above ^^ changes
+- Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
 - Add more fairness constraints to the backend
 
 ## Notes:
+- For my data, simData_oom10 has 10k rows, simData_oom50 has 50k rows...
+- For the Grid search classifier graphs, maybe make balanced accuracy --> accuracy? Or keep them? 
+- I can figure out the classifier which was picked from the GS classifier graphs by comparing the values.
 - Grid search code: https://github.com/fairlearn/fairlearn/blob/main/fairlearn/reductions/_grid_search/grid_search.py
 - Exponentiated Gradient code: https://github.com/fairlearn/fairlearn/blob/main/fairlearn/reductions/_exponentiated_gradient/exponentiated_gradient.py
 - Fairness constraint options: DP refers to demographic parity, EO to equalized odds, TPRP to true positive rate parity, FPRP to false positive rate parity, ERP to error rate parity, and BGL to bounded group loss.
