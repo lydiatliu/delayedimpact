@@ -6,6 +6,8 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
+- Try to collect the metrics I need as a csv that I can then copy and paste in
+- In results sheet, include up or down arrow to show whether we want large or small values
 - Update other notebooks with the above ^^ changes
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
