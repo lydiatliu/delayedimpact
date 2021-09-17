@@ -108,16 +108,16 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     # display_cm(cm_black, 'Confusion Matrix for Black Group')
     print(cm_black)
     print(classification_report(y_test_black, y_pred_black))
-    evaluation_outcome_rates(y_test_black, y_pred_black, sw_black)
     get_f1_scores(y_test_black, y_pred_black)
+    evaluation_outcome_rates(y_test_black, y_pred_black, sw_black)
 
     print('\nEVALUATION FOR WHITE GROUP')
     cm_white = confusion_matrix(y_test_white, y_pred_white)
     # display_cm(cm_white, 'Confusion Matrix for White Group')
     print(cm_white)
     print(classification_report(y_test_white, y_pred_white))
-    evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
     get_f1_scores(y_test_white, y_pred_white)
+    evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
     return
 
 
