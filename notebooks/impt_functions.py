@@ -46,6 +46,17 @@ def prep_data(data, test_size, weight_index):
         print('TODO')
     return X_train, X_test, y_train, y_test, race_train, race_test, sample_weight_train, sample_weight_test
 
+def get_selection_rates(y_true, y_pred, sensitive_features, type_index):
+    sr_mitigated = MetricFrame(metric=selection_rate, y_true=y_true, y_pred=y_pred,
+                               sensitive_features=sensitive_features)
+    if type_index == 0:
+        print('Selection Rate Overall: ', sr_mitigated.overall)
+    elif type_index == 1:
+        print('Selection Rate By Group: ', sr_mitigated.by_group, '\n')
+    else:
+        print('ISSUE: input 0 or 1 as 4th parameter')
+    return
+
 
 def evaluation_outcome_rates(y_true, y_pred, sample_weight):
     tnr = true_negative_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
@@ -56,14 +67,19 @@ def evaluation_outcome_rates(y_true, y_pred, sample_weight):
     print('FNER=FN/(FN+TP)= ', fner)
     fper = false_positive_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
     print('FPER=FP/(FP+TN)= ', fper)
-
     return
 
+
+# Resource for below: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
+
 def get_f1_scores(y_test, y_predict):
+    # F1 score micro: calculate metrics globally by counting the total true positives, false negatives and false positives
     print('F1 score micro: ')
     print(f1_score(y_test, y_predict, average='micro'))
+    # F1 score weighted: Calculate metrics for each label, and find their average weighted by support (the number of true instances for each label). This alters ‘macro’ to account for label imbalance; it can result in an F-score that is not between precision and recall.
     print('F1 score weighted: ')
     print(f1_score(y_test, y_predict, average='weighted'))
+    # F1 score binary: Only report results for the class specified by pos_label. This is applicable only if targets (y_{true,pred}) are binary.
     print('F1 score binary: ')
     print(f1_score(y_test, y_predict, average='binary'))
     return
@@ -84,6 +100,8 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
 
         else:
             print('You should not end up here...')
+
+    get_selection_rates(y_test, y_predict, race_test, 1)
 
     print('EVALUATION FOR BLACK GROUP')
     cm_black = confusion_matrix(y_test_black, y_pred_black)
@@ -226,6 +244,8 @@ def add_contraint(model, constraint_str, reduction_alg, X_train, y_train, race_t
     print(cm)
     print(classification_report(y_test, y_pred_mitigated))
     evaluation_outcome_rates(y_test, y_pred_mitigated, sample_weight_test)
+    get_f1_scores(y_test, y_pred_mitigated)
+    get_selection_rates(y_test, y_pred_mitigated, race_test, 0)
     print('\n')
     print('Evaluation of ', constraint_str, '-constrained classifier by race:')
     evaluation_by_race(X_test, y_test, race_test, y_pred_mitigated, sample_weight_test)
@@ -241,10 +261,10 @@ def add_contraint(model, constraint_str, reduction_alg, X_train, y_train, race_t
 
 
 def print_fairness_metrics(y_true, y_pred, sensitive_features):
-    sr_mitigated = MetricFrame(metric=selection_rate, y_true=y_true, y_pred=y_pred,
-                               sensitive_features=sensitive_features)
-    print('Selection Rate Overall: ', sr_mitigated.overall)
-    print('Selection Rate By Group: ', sr_mitigated.by_group, '\n')
+    #sr_mitigated = MetricFrame(metric=selection_rate, y_true=y_true, y_pred=y_pred,
+    #                           sensitive_features=sensitive_features)
+    #print('Selection Rate Overall: ', sr_mitigated.overall)
+    #print('Selection Rate By Group: ', sr_mitigated.by_group, '\n')
 
     dp_diff = demographic_parity_difference(y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
     print('DP Difference: ', dp_diff)
