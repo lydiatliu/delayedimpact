@@ -10,6 +10,7 @@ from fairlearn.reductions import ExponentiatedGradient, GridSearch, DemographicP
 from fairlearn.metrics import *
 from raiwidgets import FairnessDashboard
 import matplotlib.pyplot as plt
+import csv
 
 
 
@@ -319,4 +320,25 @@ def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
     print('The delayed impact of the black group is: ', di_black)
     print('The delayed impact of the white group is: ', di_white)
     return
+
+# Reference: https://stackoverflow.com/questions/53013274/writing-data-to-csv-from-dictionaries-with-multiple-values-per-key
+def save_dict_2_csv(results_dict, name_csv):
+
+    # the dictionary needs to be formatted like: {'Run1': [acc, f1, tnr,...], 'Run2': [acc, f1, tnr,...]}
+    with open(name_csv, mode='w') as csv_file:
+        fieldnames= ['Run', 'Acc', 'F1micro/F1w/F1bsr']#, 'TNR rate', 'TPR rate', 'FNER', 'FPER', 'DIB/DIW', 'DP Diff', 'EO Diff', 'TPR Diff', 'TNR Diff', 'FPR Diff', 'FNR Diff']
+        writer = csv.writer((csv_file))
+        writer.writerow(fieldnames)
+
+        for run in results_dict.items():
+            #print(run)
+            #print([row[0]])
+            #print(row[1])
+            row = list(run)
+            row = [row[0]] + row[1]
+            writer.writerow(row)
+
+        csv_file.close()
+
+
 

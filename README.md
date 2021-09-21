@@ -6,9 +6,10 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Try to collect the metrics I need as a csv that I can then copy and paste in
+- Try to collect the metrics I need as a csv that I can then copy and paste in #overall metric keys needed: run, acc, f1micro/f1w/f1bsr, tnr rate, tpr rate, fner, fper, DIB/DIW, DP Diff, EO Diff, TPR Diff, TNR Diff, FPR Diff, FNR Diff  
 - In results sheet, include up or down arrow to show whether we want large or small values
 - Update other notebooks with the above ^^ changes
+- Get results for all
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
