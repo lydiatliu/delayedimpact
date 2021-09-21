@@ -6,7 +6,10 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Try to collect the metrics I need as a csv that I can then copy and paste in #overall metric keys needed: run, acc, f1micro/f1w/f1bsr, tnr rate, tpr rate, fner, fper, DIB/DIW, DP Diff, EO Diff, TPR Diff, TNR Diff, FPR Diff, FNR Diff  
+- Finish the unmitigated list results code
+- Cut off decimal values for the results
+- Update code for mitigated classifier results saving to list
+- Make another dict for by race results
 - In results sheet, include up or down arrow to show whether we want large or small values
 - Update other notebooks with the above ^^ changes
 - Get results for all

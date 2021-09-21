@@ -50,13 +50,16 @@ def prep_data(data, test_size, weight_index):
 def get_selection_rates(y_true, y_pred, sensitive_features, type_index):
     sr_mitigated = MetricFrame(metric=selection_rate, y_true=y_true, y_pred=y_pred,
                                sensitive_features=sensitive_features)
+    sr_return = -1
     if type_index == 0:
+        sr_return = sr_mitigated.overall
         print('Selection Rate Overall: ', sr_mitigated.overall)
     elif type_index == 1:
+        sr_return = sr_mitigated.by_group
         print('Selection Rate By Group: ', sr_mitigated.by_group, '\n')
     else:
         print('ISSUE: input 0 or 1 as 4th parameter')
-    return
+    return sr_return
 
 
 def evaluation_outcome_rates(y_true, y_pred, sample_weight):
@@ -68,7 +71,7 @@ def evaluation_outcome_rates(y_true, y_pred, sample_weight):
     print('FNER=FN/(FN+TP)= ', fner)
     fper = false_positive_rate(y_true, y_pred, pos_label=1, sample_weight=sample_weight)
     print('FPER=FP/(FP+TN)= ', fper)
-    return
+    return tnr, tpr, fner, fper
 
 
 # Resource for below: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
@@ -76,14 +79,17 @@ def evaluation_outcome_rates(y_true, y_pred, sample_weight):
 def get_f1_scores(y_test, y_predict):
     # F1 score micro: calculate metrics globally by counting the total true positives, false negatives and false positives
     print('F1 score micro: ')
-    print(f1_score(y_test, y_predict, average='micro'))
+    f1_micro = f1_score(y_test, y_predict, average='micro')
+    print(f1_micro)
     # F1 score weighted: Calculate metrics for each label, and find their average weighted by support (the number of true instances for each label). This alters ‘macro’ to account for label imbalance; it can result in an F-score that is not between precision and recall.
     print('F1 score weighted: ')
-    print(f1_score(y_test, y_predict, average='weighted'))
+    f1_weighted = f1_score(y_test, y_predict, average='weighted')
+    print(f1_weighted)
     # F1 score binary: Only report results for the class specified by pos_label. This is applicable only if targets (y_{true,pred}) are binary.
     print('F1 score binary: ')
-    print(f1_score(y_test, y_predict, average='binary'))
-    return
+    f1_binary = f1_score(y_test, y_predict, average='binary')
+    print(f1_binary)
+    return f1_micro, f1_weighted, f1_binary
 
 def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     y_test_black, y_pred_black, sw_black, y_test_white, y_pred_white, sw_white = [], [], [], [], [], []
@@ -102,23 +108,23 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
         else:
             print('You should not end up here...')
 
-    get_selection_rates(y_test, y_predict, race_test, 1)
+    sr_bygroup = get_selection_rates(y_test, y_predict, race_test, 1)
 
     print('EVALUATION FOR BLACK GROUP')
     cm_black = confusion_matrix(y_test_black, y_pred_black)
     # display_cm(cm_black, 'Confusion Matrix for Black Group')
     print(cm_black)
     print(classification_report(y_test_black, y_pred_black))
-    get_f1_scores(y_test_black, y_pred_black)
-    evaluation_outcome_rates(y_test_black, y_pred_black, sw_black)
+    f1_micro_b, f1_weighted_b, f1_binary_b = get_f1_scores(y_test_black, y_pred_black)
+    tnr_b, tpr_b, fner_b, fper_b = evaluation_outcome_rates(y_test_black, y_pred_black, sw_black)
 
     print('\nEVALUATION FOR WHITE GROUP')
     cm_white = confusion_matrix(y_test_white, y_pred_white)
     # display_cm(cm_white, 'Confusion Matrix for White Group')
     print(cm_white)
     print(classification_report(y_test_white, y_pred_white))
-    get_f1_scores(y_test_white, y_pred_white)
-    evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
+    f1_micro_w, f1_weighted_w, f1_binary_w = get_f1_scores(y_test_white, y_pred_white)
+    tnr_w, tpr_w, fner_w, fper_w = evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
     return
 
 
@@ -208,7 +214,7 @@ def get_metrics_df(models_dict, y_true, group):
     return pd.DataFrame.from_dict(df_dict, orient="index", columns=models_dict.keys())
 
 # Reference: https://fairlearn.org/v0.5.0/api_reference/fairlearn.metrics.html
-def add_contraint(model, constraint_str, reduction_alg, X_train, y_train, race_train, race_test, X_test, y_test, y_predict, sample_weight_test, dashboard_bool):
+def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_train, race_test, X_test, y_test, y_predict, sample_weight_test, dashboard_bool):
     # set seed for consistent results with ExponentiatedGradient
     np.random.seed(0)
     if constraint_str == 'DP':
@@ -244,21 +250,23 @@ def add_contraint(model, constraint_str, reduction_alg, X_train, y_train, race_t
     cm = confusion_matrix(y_test, y_pred_mitigated)
     print(cm)
     print(classification_report(y_test, y_pred_mitigated))
-    get_f1_scores(y_test, y_pred_mitigated)
-    get_selection_rates(y_test, y_pred_mitigated, race_test, 0)
-    evaluation_outcome_rates(y_test, y_pred_mitigated, sample_weight_test)
+    f1_micro, f1_weighted, f1_binary = get_f1_scores(y_test, y_pred_mitigated)
+    sr_overall = get_selection_rates(y_test, y_pred_mitigated, race_test, 0)
+    tnr, tpr, fner, fper = evaluation_outcome_rates(y_test, y_pred_mitigated, sample_weight_test)
     print('\n')
+    di_black, di_white = calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
+    print('Fairness metric evaluation of ', constraint_str, '-constrained classifier')
+    dp_diff, eod_diff = print_fairness_metrics(y_true=y_test, y_pred=y_pred_mitigated, sensitive_features=race_test)
     print('Evaluation of ', constraint_str, '-constrained classifier by race:')
+    di_black, di_white = calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
     evaluation_by_race(X_test, y_test, race_test, y_pred_mitigated, sample_weight_test)
     print('\n')
-    print('Fairness metric evaluation of ', constraint_str, '-constrained classifier')
-    print_fairness_metrics(y_true=y_test, y_pred=y_pred_mitigated, sensitive_features=race_test)
+
 
     if dashboard_bool:
         FairnessDashboard(sensitive_features=race_test,y_true=y_test,
                           y_pred={"initial model": y_predict, "mitigated model": y_pred_mitigated})
-    calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
-    return mitigator
+    return mitigator, tnr, tpr, fner, fper, sr_overall, di_black, di_white, dp_diff, eod_diff
 
 
 def print_fairness_metrics(y_true, y_pred, sensitive_features):
@@ -280,7 +288,7 @@ def print_fairness_metrics(y_true, y_pred, sensitive_features):
     eod_ratio = equalized_odds_ratio(y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
     print('EOD Ratio:', eod_ratio)
     print('-->ratio of 1 means that all groups have the same TN, TN, FP, and FN rates rates \n')
-    return
+    return dp_diff, eod_diff
 
 def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
     # TPs --> score increase by 75
@@ -319,14 +327,22 @@ def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
 
     print('The delayed impact of the black group is: ', di_black)
     print('The delayed impact of the white group is: ', di_white)
-    return
+    return di_black, di_white
+
+# Reference: https://thispointer.com/python-dictionary-with-multiple-values-per-key/
+def add_values_in_dict(sample_dict, key, list_of_values):
+    """Append multiple values to a key in the given dictionary"""
+    if key not in sample_dict:
+        sample_dict[key] = list()
+    sample_dict[key].extend(list_of_values)
+    return sample_dict
 
 # Reference: https://stackoverflow.com/questions/53013274/writing-data-to-csv-from-dictionaries-with-multiple-values-per-key
 def save_dict_2_csv(results_dict, name_csv):
 
     # the dictionary needs to be formatted like: {'Run1': [acc, f1, tnr,...], 'Run2': [acc, f1, tnr,...]}
     with open(name_csv, mode='w') as csv_file:
-        fieldnames= ['Run', 'Acc', 'F1micro/F1w/F1bsr']#, 'TNR rate', 'TPR rate', 'FNER', 'FPER', 'DIB/DIW', 'DP Diff', 'EO Diff', 'TPR Diff', 'TNR Diff', 'FPR Diff', 'FNR Diff']
+        fieldnames= ['Run', 'Acc', 'F1micro/F1w/F1bsr', 'TNR rate', 'TPR rate', 'FNER', 'FPER', 'DIB/DIW', 'DP Diff', 'EO Diff', 'TPR Diff', 'TNR Diff', 'FPR Diff', 'FNR Diff']
         writer = csv.writer((csv_file))
         writer.writerow(fieldnames)
 
