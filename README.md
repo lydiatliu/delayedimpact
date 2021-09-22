@@ -6,6 +6,7 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
+- Check that the eg dp mitigated dict results match up with what was printed
 - Update rest of nb code for reflecting the dict results methods
 - In results sheet, include up or down arrow to show whether we want large or small values
 - Make nb suitable for running all (if possible?) algorithms

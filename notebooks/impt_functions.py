@@ -93,7 +93,7 @@ def get_f1_scores(y_test, y_predict):
     return f1_micro, f1_weighted, f1_binary
 
 
-def analysis_by_race(y_test, y_pred, sample_weights, print_statement):
+def analysis(y_test, y_pred, sample_weights, print_statement):
     print(print_statement)
     conf_matrix = confusion_matrix(y_test, y_pred)
     print(conf_matrix)
@@ -122,8 +122,8 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
         else:
             print('You should not end up here...')
 
-    accuracy_black, f1_scores_black, tnr_black, tpr_black, fner_black, fper_black = analysis_by_race(y_test_black, y_pred_black, sw_black, 'EVALUATION FOR BLACK GROUP')
-    accuracy_white, f1_scores_white, tnr_white, tpr_white, fner_white, fper_white = analysis_by_race(y_test_white, y_pred_white, sw_white, '\nEVALUATION FOR WHITE GROUP')
+    accuracy_black, f1_scores_black, tnr_black, tpr_black, fner_black, fper_black = analysis(y_test_black, y_pred_black, sw_black, 'EVALUATION FOR BLACK GROUP')
+    accuracy_white, f1_scores_white, tnr_white, tpr_white, fner_white, fper_white = analysis(y_test_white, y_pred_white, sw_white, '\nEVALUATION FOR WHITE GROUP')
     sr_bygroup = get_selection_rates(y_test, y_predict, race_test, 1)  #sr_bygroup is a pandas series
     sr_black = round(sr_bygroup.values[0]*100, 2)
     sr_white = round(sr_bygroup.values[1]*100, 2)
@@ -182,6 +182,7 @@ def update_model_perf_dict(sweep, models_dict, sweep_preds, sweep_scores, non_do
     print(get_metrics_df(models_dict, y_test, race_test))
     return models_dict
 
+
 def get_metrics_df(models_dict, y_true, group):
     metrics_dict = {
         "Overall selection rate": (
@@ -218,6 +219,7 @@ def get_metrics_df(models_dict, y_true, group):
                                 for model_name, (preds, scores) in models_dict.items()]
     return pd.DataFrame.from_dict(df_dict, orient="index", columns=models_dict.keys())
 
+
 # Reference: https://fairlearn.org/v0.5.0/api_reference/fairlearn.metrics.html
 def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_train, race_test, X_test, y_test, y_predict, sample_weight_test, dashboard_bool):
     # set seed for consistent results with ExponentiatedGradient
@@ -251,27 +253,24 @@ def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_
     mitigator.fit(X_train, y_train, sensitive_features=race_train)
     y_pred_mitigated = mitigator.predict(X_test)
 
-    print('Evaluation of ', constraint_str, '-constrained classifier overall:')
-    cm = confusion_matrix(y_test, y_pred_mitigated)
-    print(cm)
-    print(classification_report(y_test, y_pred_mitigated))
-    f1_micro, f1_weighted, f1_binary = get_f1_scores(y_test, y_pred_mitigated)
-    sr_overall = get_selection_rates(y_test, y_pred_mitigated, race_test, 0)
-    tnr, tpr, fner, fper = evaluation_outcome_rates(y_test, y_pred_mitigated, sample_weight_test)
+    overall_message = 'Evaluation of '+ constraint_str + '-constrained classifier overall:'
+    accuracy, f1_scores, tnr, tpr, fner, fper = analysis(y_test, y_pred_mitigated, sample_weight_test, overall_message)
+    sr = get_selection_rates(y_test, y_pred_mitigated, race_test, 0)
     print('\n')
     di_black, di_white = calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
+    di_str = str(round(di_black, 2)) + "/" + str(round(di_white, 2))
     print('Fairness metric evaluation of ', constraint_str, '-constrained classifier')
     dp_diff, eod_diff = print_fairness_metrics(y_true=y_test, y_pred=y_pred_mitigated, sensitive_features=race_test)
+    results_overall = [accuracy, f1_scores, sr, tnr, tpr, fner, fper, di_str, round(dp_diff*100, 2), round(eod_diff*100, 2)]
     print('Evaluation of ', constraint_str, '-constrained classifier by race:')
-    di_black, di_white = calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
-    evaluation_by_race(X_test, y_test, race_test, y_pred_mitigated, sample_weight_test)
+    results_black, results_white = evaluation_by_race(X_test, y_test, race_test, y_pred_mitigated, sample_weight_test)
     print('\n')
-
 
     if dashboard_bool:
         FairnessDashboard(sensitive_features=race_test,y_true=y_test,
                           y_pred={"initial model": y_predict, "mitigated model": y_pred_mitigated})
-    return mitigator, tnr, tpr, fner, fper, sr_overall, di_black, di_white, dp_diff, eod_diff
+
+    return mitigator, results_overall, results_black, results_white
 
 
 def print_fairness_metrics(y_true, y_pred, sensitive_features):
@@ -343,11 +342,10 @@ def add_values_in_dict(sample_dict, key, list_of_values):
     return sample_dict
 
 # Reference: https://stackoverflow.com/questions/53013274/writing-data-to-csv-from-dictionaries-with-multiple-values-per-key
-def save_dict_2_csv(results_dict, name_csv):
+def save_dict_2_csv(results_dict, fieldnames, name_csv):
 
     # the dictionary needs to be formatted like: {'Run1': [acc, f1, tnr,...], 'Run2': [acc, f1, tnr,...]}
     with open(name_csv, mode='w') as csv_file:
-        fieldnames= ['Run', 'Acc', 'F1micro/F1w/F1bsr', 'TNR rate', 'TPR rate', 'FNER', 'FPER', 'DIB/DIW', 'DP Diff', 'EO Diff', 'TPR Diff', 'TNR Diff', 'FPR Diff', 'FNR Diff']
         writer = csv.writer((csv_file))
         writer.writerow(fieldnames)
 
