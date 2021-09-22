@@ -6,12 +6,9 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Finish the unmitigated list results code
-- Cut off decimal values for the results
-- Update code for mitigated classifier results saving to list
-- Make another dict for by race results
+- Update rest of nb code for reflecting the dict results methods
 - In results sheet, include up or down arrow to show whether we want large or small values
-- Update other notebooks with the above ^^ changes
+- Make nb suitable for running all (if possible?) algorithms
 - Get results for all
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results

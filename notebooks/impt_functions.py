@@ -89,7 +89,21 @@ def get_f1_scores(y_test, y_predict):
     print('F1 score binary: ')
     f1_binary = f1_score(y_test, y_predict, average='binary')
     print(f1_binary)
+    print('')
     return f1_micro, f1_weighted, f1_binary
+
+
+def analysis_by_race(y_test, y_pred, sample_weights, print_statement):
+    print(print_statement)
+    conf_matrix = confusion_matrix(y_test, y_pred)
+    print(conf_matrix)
+    results_dict = classification_report(y_test, y_pred, output_dict=True)
+    print(classification_report(y_test, y_pred))
+    f1_micro, f1_weighted, f1_binary = get_f1_scores(y_test, y_pred)
+    f1_str = str(round(f1_micro * 100, 2)) + "/" + str(round(f1_weighted * 100, 2)) + "/" + str(round(f1_binary * 100, 2))
+    tnr, tpr, fner, fper = evaluation_outcome_rates(y_test, y_pred, sample_weights)
+    return round(results_dict['accuracy']*100, 2), f1_str, round(tnr*100, 2), round(tpr*100, 2), round(fner*100, 2), round(fper*100, 2)
+
 
 def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     y_test_black, y_pred_black, sw_black, y_test_white, y_pred_white, sw_white = [], [], [], [], [], []
@@ -108,24 +122,15 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
         else:
             print('You should not end up here...')
 
-    sr_bygroup = get_selection_rates(y_test, y_predict, race_test, 1)
-
-    print('EVALUATION FOR BLACK GROUP')
-    cm_black = confusion_matrix(y_test_black, y_pred_black)
-    # display_cm(cm_black, 'Confusion Matrix for Black Group')
-    print(cm_black)
-    print(classification_report(y_test_black, y_pred_black))
-    f1_micro_b, f1_weighted_b, f1_binary_b = get_f1_scores(y_test_black, y_pred_black)
-    tnr_b, tpr_b, fner_b, fper_b = evaluation_outcome_rates(y_test_black, y_pred_black, sw_black)
-
-    print('\nEVALUATION FOR WHITE GROUP')
-    cm_white = confusion_matrix(y_test_white, y_pred_white)
-    # display_cm(cm_white, 'Confusion Matrix for White Group')
-    print(cm_white)
-    print(classification_report(y_test_white, y_pred_white))
-    f1_micro_w, f1_weighted_w, f1_binary_w = get_f1_scores(y_test_white, y_pred_white)
-    tnr_w, tpr_w, fner_w, fper_w = evaluation_outcome_rates(y_test_white, y_pred_white, sw_white)
-    return
+    accuracy_black, f1_scores_black, tnr_black, tpr_black, fner_black, fper_black = analysis_by_race(y_test_black, y_pred_black, sw_black, 'EVALUATION FOR BLACK GROUP')
+    accuracy_white, f1_scores_white, tnr_white, tpr_white, fner_white, fper_white = analysis_by_race(y_test_white, y_pred_white, sw_white, '\nEVALUATION FOR WHITE GROUP')
+    sr_bygroup = get_selection_rates(y_test, y_predict, race_test, 1)  #sr_bygroup is a pandas series
+    sr_black = round(sr_bygroup.values[0]*100, 2)
+    sr_white = round(sr_bygroup.values[1]*100, 2)
+    di_black, di_white = calculate_delayed_impact(X_test, y_test, y_predict, race_test)
+    results_black = [accuracy_black, f1_scores_black, sr_black, tnr_black, fner_black, fper_black, round(di_black, 2)]
+    results_white = [accuracy_white, f1_scores_white, sr_white, tnr_white, fner_white, fper_white, round(di_white, 2)]
+    return results_black, results_white
 
 
 def grid_search_show(model, constraint, y_predict, X_test, y_test, race_test, constraint_name, model_name, models_dict, decimal):
@@ -355,6 +360,6 @@ def save_dict_2_csv(results_dict, name_csv):
             writer.writerow(row)
 
         csv_file.close()
-
+    return
 
 
