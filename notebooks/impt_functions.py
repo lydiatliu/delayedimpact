@@ -128,8 +128,8 @@ def evaluation_by_race(X_test, y_test, race_test, y_predict, sample_weight):
     sr_black = round(sr_bygroup.values[0]*100, 2)
     sr_white = round(sr_bygroup.values[1]*100, 2)
     di_black, di_white = calculate_delayed_impact(X_test, y_test, y_predict, race_test)
-    results_black = [accuracy_black, f1_scores_black, sr_black, tnr_black, fner_black, fper_black, round(di_black, 2)]
-    results_white = [accuracy_white, f1_scores_white, sr_white, tnr_white, fner_white, fper_white, round(di_white, 2)]
+    results_black = [accuracy_black, f1_scores_black, sr_black, tnr_black, tpr_black, fner_black, fper_black, round(di_black, 2)]
+    results_white = [accuracy_white, f1_scores_white, sr_white, tnr_white, tpr_white, fner_white, fper_white, round(di_white, 2)]
     return results_black, results_white
 
 
@@ -259,9 +259,9 @@ def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_
     print('\n')
     di_black, di_white = calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
     di_str = str(round(di_black, 2)) + "/" + str(round(di_white, 2))
-    print('Fairness metric evaluation of ', constraint_str, '-constrained classifier')
+    print('\nFairness metric evaluation of ', constraint_str, '-constrained classifier')
     dp_diff, eod_diff = print_fairness_metrics(y_true=y_test, y_pred=y_pred_mitigated, sensitive_features=race_test)
-    results_overall = [accuracy, f1_scores, sr, tnr, tpr, fner, fper, di_str, round(dp_diff*100, 2), round(eod_diff*100, 2)]
+    results_overall = [accuracy, f1_scores, round(sr*100, 2), tnr, tpr, fner, fper, di_str, round(dp_diff*100, 2), round(eod_diff*100, 2)]
     print('Evaluation of ', constraint_str, '-constrained classifier by race:')
     results_black, results_white = evaluation_by_race(X_test, y_test, race_test, y_pred_mitigated, sample_weight_test)
     print('\n')
@@ -343,8 +343,11 @@ def add_values_in_dict(sample_dict, key, list_of_values):
 
 # Reference: https://stackoverflow.com/questions/53013274/writing-data-to-csv-from-dictionaries-with-multiple-values-per-key
 def save_dict_2_csv(results_dict, fieldnames, name_csv):
+    # Example for fieldnames:
+    # overall_fieldnames = ['Run', 'Acc', 'F1micro/F1w/F1bsr', 'SelectionRate', 'TNR rate', 'TPR rate', 'FNER', 'FPER', 'DIB/DIW', 'DP Diff', 'EO Diff']
+    # byrace_fieldnames = ['Run', 'Acc', 'F1micro/F1w/F1bsr', 'SelectionRate', 'TNR rate', 'TPR rate', 'FNER', 'FPER', 'DIB/DIW']
 
-    # the dictionary needs to be formatted like: {'Run1': [acc, f1, tnr,...], 'Run2': [acc, f1, tnr,...]}
+    # the dictionary needs to be formatted like: {'Run1': [acc, f1, ...], 'Run2': [acc, f1, ...]}
     with open(name_csv, mode='w') as csv_file:
         writer = csv.writer((csv_file))
         writer.writerow(fieldnames)
