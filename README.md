@@ -6,7 +6,8 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Make nb suitable for running all (if possible?) algorithms
+- Get the TPR diff, FPR diff, and ER diff in results?? Use these functions here [*extra metrics*](https://github.com/fairlearn/fairlearn/blob/94229647dda802a59bcbfe7f6d64295d64e96efa/fairlearn/metrics/_extra_metrics.py)
+- Make nb suitable for running all (if possible?) algorithms, so not model dependent
 - Get results for all
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
