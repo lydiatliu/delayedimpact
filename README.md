@@ -6,12 +6,9 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Make nb suitable for running all (if possible?) algorithms, so not model dependent
 - Get results for all
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
-- Make notebooks for the different models that show graphs of the GS models with constraint by accuracy, so you can see the different model results
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
-- Add more fairness constraints to the backend
 
 ## Notes:
 - For my data, simData_oom10 has 10k rows, simData_oom50 has 50k rows...

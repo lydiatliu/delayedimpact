@@ -341,6 +341,7 @@ def print_fairness_metrics(y_true, y_pred, sensitive_features, sample_weight):
     print('FPR Difference: ', fpr_dif)
     er_dif = er_diff(y_true, y_pred, sensitive_features)
     print('ER Difference: ', er_dif)
+    print('')
 
     return dp_diff, eod_diff, eoo_diff, fpr_dif, er_dif
 
