@@ -2,7 +2,7 @@
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score, roc_auc_score, f1_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, balanced_accuracy_score, roc_auc_score, f1_score
 import pandas as pd
 import numpy as np
 from fairlearn.reductions import ExponentiatedGradient, GridSearch, DemographicParity, EqualizedOdds, \
@@ -73,6 +73,48 @@ def evaluation_outcome_rates(y_true, y_pred, sample_weight):
     print('FPER=FP/(FP+TN)= ', fper)
     return tnr, tpr, fner, fper
 
+def tpr_diff(y_true, y_pred, sensitive_features, sample_weight=None):
+    tpr = MetricFrame(metrics=true_positive_rate, y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features,
+                      sample_params={'sample_weight': sample_weight})
+    result = tpr.difference()
+    return result
+
+def fpr_diff(y_true, y_pred, sensitive_features, sample_weight=None):
+    fpr = MetricFrame(metrics=false_positive_rate, y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features,
+                sample_params={'sample_weight': sample_weight})
+    result = fpr.difference()
+    return result
+
+def er_diff(y_true, y_pred, sensitive_features):
+    result = MetricFrame(metrics=accuracy_score, y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features).difference(method='between_groups')
+
+    # Doing a check of the result variable to see if it matches up logically -- it does!!
+    '''
+    print('Overall error rate')
+    print(1-accuracy_score(y_true, y_pred, sample_weight=sample_weight))
+    y_test_black, y_pred_black, sw_black, y_test_white, y_pred_white, sw_white = [], [], [], [], [], []
+
+    for index, race in enumerate(sensitive_features):
+        if (race == 0):  # black
+            y_test_black.append(y_true[index])
+            y_pred_black.append(y_pred[index])
+            sw_black.append(sample_weight[index])
+        elif (race == 1):  # white
+            y_test_white.append(y_true[index])
+            y_pred_white.append(y_pred[index])
+            sw_white.append(sample_weight[index])
+
+    print('black error rate:')
+    b_er = 1-accuracy_score(y_test_black, y_pred_black, sample_weight=sw_black)
+    print(b_er)
+    print('white error rate:')
+    w_er = 1-accuracy_score(y_test_white, y_pred_white, sample_weight=sw_white)
+    print(w_er)
+    print('error rate differene:')
+    print(w_er-b_er)
+    print('the metricframe error rate diff calc:')
+    '''
+    return result
 
 # Resource for below: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
 
@@ -139,12 +181,12 @@ def grid_search_show(model, constraint, y_predict, X_test, y_test, race_test, co
 
     sweep = [constraint(y_test, preds, sensitive_features=race_test)
              for preds in sweep_preds]
-    balanced_accuracy_sweep = [balanced_accuracy_score(y_test, preds) for preds in sweep_preds]
+    accuracy_sweep = [accuracy_score(y_test, preds) for preds in sweep_preds]
     # auc_sweep = [roc_auc_score(y_test, scores) for scores in sweep_scores]
 
-    # Select only non-dominated models (with respect to balanced accuracy and equalized odds difference)
+    # Select only non-dominated models (with respect to accuracy and equalized odds difference)
     all_results = pd.DataFrame(
-        {"predictor": model.predictors_, "accuracy": balanced_accuracy_sweep, "disparity": sweep}
+        {"predictor": model.predictors_, "accuracy": accuracy_sweep, "disparity": sweep}
     )
     non_dominated = []
     for row in all_results.itertuples():
@@ -155,15 +197,15 @@ def grid_search_show(model, constraint, y_predict, X_test, y_test, race_test, co
             non_dominated.append(False)
 
     sweep_non_dominated = np.asarray(sweep)[non_dominated]
-    balanced_accuracy_non_dominated = np.asarray(balanced_accuracy_sweep)[non_dominated]
+    accuracy_non_dominated = np.asarray(accuracy_sweep)[non_dominated]
     # auc_non_dominated = np.asarray(auc_sweep)[non_dominated]
 
     # Plot DP difference vs balanced accuracy
-    plt.scatter(balanced_accuracy_non_dominated, sweep_non_dominated, label=model_name)
-    plt.scatter(balanced_accuracy_score(y_test, y_predict),
+    plt.scatter(accuracy_non_dominated, sweep_non_dominated, label=model_name)
+    plt.scatter(accuracy_score(y_test, y_predict),
                 constraint(y_test, y_predict, sensitive_features=race_test),
                 label="Unmitigated Model")
-    plt.xlabel("Balanced Accuracy")
+    plt.xlabel("Accuracy")
     plt.ylabel(constraint_name)
     plt.legend(bbox_to_anchor=(1.55, 1))
     plt.show()
@@ -260,8 +302,8 @@ def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_
     di_black, di_white = calculate_delayed_impact(X_test, y_test, y_pred_mitigated, race_test)
     di_str = str(round(di_black, 2)) + "/" + str(round(di_white, 2))
     print('\nFairness metric evaluation of ', constraint_str, '-constrained classifier')
-    dp_diff, eod_diff = print_fairness_metrics(y_true=y_test, y_pred=y_pred_mitigated, sensitive_features=race_test)
-    results_overall = [accuracy, f1_scores, round(sr*100, 2), tnr, tpr, fner, fper, di_str, round(dp_diff*100, 2), round(eod_diff*100, 2)]
+    dp_diff, eod_diff, eoo_dif, fpr_dif, er_dif = print_fairness_metrics(y_true=y_test, y_pred=y_pred_mitigated, sensitive_features=race_test, sample_weight=sample_weight_test)
+    results_overall = [accuracy, f1_scores, round(sr*100, 2), tnr, tpr, fner, fper, di_str, round(dp_diff*100, 2), round(eod_diff*100, 2), round(eoo_dif*100, 2), round(fpr_dif*100, 2), round(er_dif*100, 2)]
     print('Evaluation of ', constraint_str, '-constrained classifier by race:')
     results_black, results_white = evaluation_by_race(X_test, y_test, race_test, y_pred_mitigated, sample_weight_test)
     print('\n')
@@ -273,7 +315,7 @@ def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_
     return mitigator, results_overall, results_black, results_white
 
 
-def print_fairness_metrics(y_true, y_pred, sensitive_features):
+def print_fairness_metrics(y_true, y_pred, sensitive_features, sample_weight):
     #sr_mitigated = MetricFrame(metric=selection_rate, y_true=y_true, y_pred=y_pred,
     #                           sensitive_features=sensitive_features)
     #print('Selection Rate Overall: ', sr_mitigated.overall)
@@ -292,7 +334,15 @@ def print_fairness_metrics(y_true, y_pred, sensitive_features):
     eod_ratio = equalized_odds_ratio(y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
     print('EOD Ratio:', eod_ratio)
     print('-->ratio of 1 means that all groups have the same TN, TN, FP, and FN rates rates \n')
-    return dp_diff, eod_diff
+
+    eoo_diff = tpr_diff(y_true, y_pred, sensitive_features, sample_weight)
+    print('EOO/TPR Difference: ', eoo_diff)
+    fpr_dif = fpr_diff(y_true, y_pred, sensitive_features, sample_weight)
+    print('FPR Difference: ', fpr_dif)
+    er_dif = er_diff(y_true, y_pred, sensitive_features)
+    print('ER Difference: ', er_dif)
+
+    return dp_diff, eod_diff, eoo_diff, fpr_dif, er_dif
 
 def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
     # TPs --> score increase by 75
