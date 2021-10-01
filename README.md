@@ -6,10 +6,12 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
-- Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
+- Try gradient boosted trees model with 100k dataset
+- Record results for whatever I can do above with GBT
+- Try SVM linear (running in the background for a while...otherwise try-->with fewer data points, see what its limit is with size of data?)
 
 ## Notes:
+- Agarwal et al. used weighted classification implementations of logistic regression and gradient-boosted decision trees
 - For my data, simData_oom10 has 10k rows, simData_oom50 has 50k rows...
 - For the Grid search classifier graphs, maybe make balanced accuracy --> accuracy? Or keep them? 
 - I can figure out the classifier which was picked from the GS classifier graphs by comparing the values.
