@@ -6,7 +6,6 @@ This repository is forked and adapted from Lydia T. Liu's [repository](https://g
 This repository is **under construction! :D**
 
 ## Todos:
-- Get results for all
 - Try AUC(?) and gradient boosted trees from scikit learn to compare to agarwal's reduction alg paper
 - Try SVM with fewer data points, see what its limit is with size of data? maybe leave 10k run going for a while? don't forget to save results
 
