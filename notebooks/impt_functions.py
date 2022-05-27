@@ -312,7 +312,7 @@ def add_constraint(model, constraint_str, reduction_alg, X_train, y_train, race_
         FairnessDashboard(sensitive_features=race_test,y_true=y_test,
                           y_pred={"initial model": y_predict, "mitigated model": y_pred_mitigated})
 
-    return mitigator, results_overall, results_black, results_white
+    return mitigator, results_overall, results_black, results_white, y_pred_mitigated
 
 
 def print_fairness_metrics(y_true, y_pred, sensitive_features, sample_weight):
@@ -383,6 +383,30 @@ def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
     print('The delayed impact of the black group is: ', di_black)
     print('The delayed impact of the white group is: ', di_white)
     return di_black, di_white
+
+def get_new_scores(X_test, y_predict, y_test, race_test):
+    black_scores = []
+    white_scores = []
+
+    for index, label in enumerate(y_predict):
+        # first check for TP or FP
+        if label == 1 and y_test[index] == 1:  # if it's a TP
+            if race_test[index] == 0:  # black
+                black_scores.append(X_test[index][0] + 75)
+            elif race_test[index] == 1:  # white
+                white_scores.append(X_test[index][0] + 75)
+        elif label == 1 and y_test[index] == 0:  # if it's a FP
+            if race_test[index] == 0:  # black
+                black_scores.append(X_test[index][0] - 150)
+            elif race_test[index] == 1:  # white
+                white_scores.append(X_test[index][0] - 150)
+        else:  # if it's a TN or FN, no change to credit score
+            if race_test[index] == 0:  # black
+                black_scores.append(X_test[index][0])
+            elif race_test[index] == 1:  # white
+                white_scores.append(X_test[index][0])
+
+    return black_scores, white_scores
 
 # Reference: https://thispointer.com/python-dictionary-with-multiple-values-per-key/
 def add_values_in_dict(sample_dict, key, list_of_values):
