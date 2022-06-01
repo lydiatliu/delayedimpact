@@ -360,15 +360,31 @@ def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
         # check for TPs
         if true_label == y_pred[index] and true_label==1:
             if race_test[index] == 0:  # black borrower
-                score_diff_black.append(75)
+                new_score = X_test[index][0] + 75
+                if new_score >= 850:
+                    score_diff_black.append(850-X_test[index][0])
+                else:
+                    score_diff_black.append(new_score - X_test[index][0])
             elif race_test[index] == 1:  # white borrower
-                score_diff_white.append(75)
+                new_score = X_test[index][0] + 75
+                if new_score > 850:
+                    score_diff_white.append(850-X_test[index][0])
+                else:
+                    score_diff_white.append(new_score - X_test[index][0])
         # check for FPs
         elif true_label == 0 and y_pred[index] == 1:
             if race_test[index] == 0:  # black borrower
-                score_diff_black.append(-150)
+                new_score = X_test[index][0] - 150
+                if new_score < 300:
+                    score_diff_black.append(300-X_test[index][0])
+                else:
+                    score_diff_black.append(new_score - X_test[index][0])
             elif race_test[index] == 1:  # white borrower
-                score_diff_white.append(-150)
+                new_score = X_test[index][0] - 150
+                if new_score < 300:
+                    score_diff_white.append(300-X_test[index][0])
+                else:
+                    score_diff_white.append(new_score - X_test[index][0])
         elif (true_label == y_pred[index] and true_label == 0) or (true_label == 1 and y_pred[index] == 0):
             if race_test[index] == 0:  # black indiv
                 score_diff_black.append(0)
@@ -380,8 +396,8 @@ def calculate_delayed_impact(X_test, y_true, y_pred, race_test):
     di_black = sum(score_diff_black)/len(score_diff_black)
     di_white = sum(score_diff_white)/len(score_diff_white)
 
-    print('The delayed impact of the black group is: ', di_black)
-    print('The delayed impact of the white group is: ', di_white)
+    print('The average delayed impact of the black group is: ', di_black)
+    print('The average delayed impact of the white group is: ', di_white)
     return di_black, di_white
 
 def get_new_scores(X_test, y_predict, y_test, race_test):
@@ -392,14 +408,30 @@ def get_new_scores(X_test, y_predict, y_test, race_test):
         # first check for TP or FP
         if label == 1 and y_test[index] == 1:  # if it's a TP
             if race_test[index] == 0:  # black
-                black_scores.append(X_test[index][0] + 75)
+                new_score = X_test[index][0] + 75
+                if new_score <= 850:
+                    black_scores.append(new_score)
+                else:
+                    black_scores.append(850)
             elif race_test[index] == 1:  # white
-                white_scores.append(X_test[index][0] + 75)
+                new_score = X_test[index][0] + 75
+                if new_score <= 850:
+                    white_scores.append(new_score)
+                else:
+                    white_scores.append(850)
         elif label == 1 and y_test[index] == 0:  # if it's a FP
             if race_test[index] == 0:  # black
-                black_scores.append(X_test[index][0] - 150)
+                new_score = X_test[index][0] - 150
+                if new_score < 300:
+                    black_scores.append(300)
+                else:
+                    black_scores.append(new_score)
             elif race_test[index] == 1:  # white
-                white_scores.append(X_test[index][0] - 150)
+                new_score = X_test[index][0] - 150
+                if new_score < 300:
+                    white_scores.append(300)
+                else:
+                    white_scores.append(new_score)
         else:  # if it's a TN or FN, no change to credit score
             if race_test[index] == 0:  # black
                 black_scores.append(X_test[index][0])
